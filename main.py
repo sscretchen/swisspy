@@ -1,7 +1,8 @@
-import tkinter.filedialog
 from threading import Thread
-from tkinter import *
+from tkinter import (Tk, Label, Entry, Button, Frame, Scrollbar, W, EW, E, Text,
+                     DISABLED, Y, BOTH, NORMAL, END, filedialog)
 from datetime import datetime
+import tkinter
 import socket
 
 
@@ -36,23 +37,32 @@ class PortScanner:
     def start_scan(self, url, start_port, end_port):
         """
         Scan user specified range of ports
+        if port open or closed pass to console for printing
+        check port range before scanning
         """
-        start_time = datetime.now()
-        self.output_to_console(f"SCAN STARTED ON: {start_time.strftime('%A')} "
-                               f"{start_time.strftime('%m-%d-%Y, %H:%M:%S')}\n\n")
-        for port in range(start_port, end_port + 1):
-            if not self.stop:
-                self.output_to_console(f"Scanning port {port}")
-                if self.is_port_open(url, port):
-                    self.output_to_console(f"\t\t[+] open\n")
-                else:
-                    self.output_to_console(f"\t\t[-] closed\n")
 
-        finish_time = datetime.now()
-        total_time = finish_time - start_time
-        self.output_to_console(f"\nSCAN STOPPED AT: {finish_time.strftime('%A')} "
-                               f"{finish_time.strftime('%m-%d-%Y, %H:%M:%S')}\n")
-        self.output_to_console(f"Time elapsed: {total_time}")
+        # check that end port entry is not higher than starting port
+        if end_port < start_port:
+            self.output_to_console(f'[!] End port ({end_port}) cannot be less than start port ({start_port}). '
+                                   f'Please enter a valid range')
+        else:
+            start_time = datetime.now()
+            self.output_to_console(f"SCANNING TARGET: {url}\n")
+            self.output_to_console(f"SCAN STARTED ON: {start_time.strftime('%A')} "
+                                   f"{start_time.strftime('%m-%d-%Y, %H:%M:%S')}\n\n")
+            for port in range(start_port, end_port + 1):
+                if not self.stop:
+                    self.output_to_console(f"Scanning port {port}")
+                    if self.is_port_open(url, port):
+                        self.output_to_console(f"\t\t[+] open\n")
+                    else:
+                        self.output_to_console(f"\t\t[-] closed\n")
+
+            finish_time = datetime.now()
+            total_time = finish_time - start_time
+            self.output_to_console(f"\nSCAN STOPPED AT: {finish_time.strftime('%A')} "
+                                   f"{finish_time.strftime('%m-%d-%Y, %H:%M:%S')}\n")
+            self.output_to_console(f"TIME ELAPSED: {total_time}")
 
     def is_port_open(self, url, port):
         """
@@ -75,6 +85,7 @@ class PortScanner:
         Empty console before printing new results
         Pass users supplied data to new thread function
         """
+        self.stop = False  # This fixed the issue of starting new scan. Program could not reach start_scan it seems
         self.empty_console()
         self.scan_new_thread()
 
@@ -118,7 +129,7 @@ class PortScanner:
         # host entry Label
         Label(root, text='Host :', font=('calibri', 16, 'bold')).grid(row=1, column=1, sticky=E, padx=5, pady=5)
         self.host_entry = Entry(self.root, font=('calibri', 16))
-        self.host_entry.insert(0, '192.168.1.87')  # Using metasploitable IP
+        self.host_entry.insert(0, 'ex: somesite.com / 5.5.5.5')  # Using metasploitable IP
         self.host_entry.grid(row=1, column=2, sticky=EW, padx=5, pady=5)
 
         # Start port label
