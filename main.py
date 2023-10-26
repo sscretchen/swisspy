@@ -1,5 +1,7 @@
+import tkinter.filedialog
 from threading import Thread
 from tkinter import *
+from datetime import datetime
 import socket
 
 
@@ -18,13 +20,12 @@ class PortScanner:
         self.console_text.delete('1.0', END)
         self.console_text.config(state=DISABLED)
 
-    def scan_in_a_new_thread(self):
+    def scan_new_thread(self):
         """
         Capture user args
         Pass to start_scan for the process to start
         This function keeps the start_scan call from blocking tkinter main loop
         """
-
         url = self.host_entry.get()
         start_port = int(self.start_port_entry.get())
         end_port = int(self.end_port_entry.get())
@@ -35,8 +36,10 @@ class PortScanner:
     def start_scan(self, url, start_port, end_port):
         """
         Scan user specified range of ports
-        if port open or closed pass to console for printing
         """
+        start_time = datetime.now()
+        self.output_to_console(f"SCAN STARTED ON: {start_time.strftime('%A')} "
+                               f"{start_time.strftime('%m-%d-%Y, %H:%M:%S')}\n\n")
         for port in range(start_port, end_port + 1):
             if not self.stop:
                 self.output_to_console(f"Scanning port {port}")
@@ -44,6 +47,12 @@ class PortScanner:
                     self.output_to_console(f"\t\t[+] open\n")
                 else:
                     self.output_to_console(f"\t\t[-] closed\n")
+
+        finish_time = datetime.now()
+        total_time = finish_time - start_time
+        self.output_to_console(f"\nSCAN STOPPED AT: {finish_time.strftime('%A')} "
+                               f"{finish_time.strftime('%m-%d-%Y, %H:%M:%S')}\n")
+        self.output_to_console(f"Time elapsed: {total_time}")
 
     def is_port_open(self, url, port):
         """
@@ -61,11 +70,30 @@ class PortScanner:
             return False
 
     def scan_button_clicked(self):
+        """
+        Start scan function
+        Empty console before printing new results
+        Pass users supplied data to new thread function
+        """
         self.empty_console()
-        self.scan_in_a_new_thread()
+        self.scan_new_thread()
 
     def stop_button_clicked(self):
+        """
+        Stop scan and trigger the if loop in start_scan to break
+        """
         self.stop = True
+
+    def save_scan_results(self):
+        """
+        Save console window results to .txt file
+        """
+        fp = tkinter.filedialog.asksaveasfilename(defaultextension=".txt",
+                                                  filetypes=[("Text files", "*.txt"), ("All files", "*.*")])
+        if fp:
+            with open(fp, 'w') as file:
+                text_content = self.console_text.get("1.0", END)
+                file.write(text_content)
 
     def output_to_console(self, new_text):
         """
@@ -131,27 +159,27 @@ class PortScanner:
             row=4, column=2, sticky=E, padx=5, pady=5)
 
         # Save button // no functionality for now
-        Button(root, text='Save results', font=('calibri', 12, 'bold')).grid(
+        Button(root, text='Save results', font=('calibri', 12, 'bold'), command=self.save_scan_results).grid(
             row=7, column=1, sticky=EW, padx=5, pady=5, columnspan=2)
 
 
-""" ================= GUI design ================="""
+""" ================= Init GUI & design ================="""
+# Window details. Grid layout in the class sets window size
+root = Tk()
+root.title('SwissPy - by Sean Scretchen')
+root.iconbitmap('snake.ico')
+
 # colors
 outline = '#00ee00'  # neon green
 background = '#222222'  # black
-on_click_color = '#00ee00'
 foreground = '#00ee00'
+root.tk_setPalette(background=background,
+                   foreground=outline,
+                   activeBackground=foreground,
+                   activeForeground=background,
+                   highlightColor=outline,
+                   highlightBackground=outline)
 
 if __name__ == '__main__':
-    root = Tk()
     PortScanner(root)
-    root.title('SwissPy - by Sean Scretchen')
-    root.iconbitmap('snake.ico')
-    root.tk_setPalette(background=background,
-                       foreground=outline,
-                       activeBackground=foreground,
-                       activeForeground=background,
-                       highlightColor=outline,
-                       highlightBackground=outline)
     root.mainloop()
-
