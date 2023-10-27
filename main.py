@@ -23,7 +23,7 @@ class PortScanner:
         self.console_text.delete('1.0', END)
         self.console_text.config(state=DISABLED)
 
-    def scan_new_thread(self):
+    def thread_scanner(self):
         """
         Capture user args
         Pass to start_scan for the process to start
@@ -67,7 +67,7 @@ class PortScanner:
                     else:
                         self.output_to_console(f"\t\t[-] closed\n")
 
-            # Stop timer and calculate total
+            # Stop timer and calculate total. This catches the stop_scan button as well. stop=True
             finish_time = datetime.now()
             total_time = finish_time - start_time
             self.output_to_console(f"\nSCAN STOPPED AT: {finish_time.strftime('%A')} "
@@ -86,7 +86,7 @@ class PortScanner:
             s.connect((socket.gethostbyname(url), port))
             s.close()
             return True
-        except:
+        except socket.error as err:
             return False
 
     def scan_button_clicked(self):
@@ -97,11 +97,11 @@ class PortScanner:
         """
         self.stop = False  # This fixed the issue of starting new scan.
         self.empty_console()
-        self.scan_new_thread()
+        self.thread_scanner()
 
     def stop_button_clicked(self):
         """
-        Stop scan and trigger the if loop in start_scan to break
+        Stop scan and trigger if loop in start_scan to break
         """
         self.stop = True
 
@@ -139,7 +139,7 @@ class PortScanner:
         # host entry Label
         Label(root, text='Host :', font=('calibri', 16, 'bold')).grid(row=1, column=1, sticky=E, padx=5, pady=5)
         self.host_entry = Entry(self.root, font=('calibri', 16))
-        self.host_entry.insert(0, 'ex: somesite.com / 5.5.5.5')  # Using metasploitable IP
+        self.host_entry.insert(0, 'url or IP')  # Using metasploitable IP
         self.host_entry.grid(row=1, column=2, sticky=EW, padx=5, pady=5)
 
         # Start port label
