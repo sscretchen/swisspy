@@ -4,6 +4,8 @@ from tkinter import (Tk, Label, Entry, Button, Frame, Scrollbar, W, EW, E, Text,
 from datetime import datetime
 import tkinter
 import socket
+import sys
+import pyfiglet
 
 
 class PortScanner:
@@ -55,9 +57,17 @@ class PortScanner:
                     self.output_to_console(f"Scanning port {port}")
                     if self.is_port_open(url, port):
                         self.output_to_console(f"\t\t[+] open\n")
+                        # Check for known service
+                        try:
+                            self.output_to_console(f'\t\t[?] port {port} service -> '
+                                                   f'{socket.getservbyport(port, "tcp")}\n')
+                        except socket.error:
+                            self.output_to_console(f'\t\t[?] port {port} service -> '
+                                                   f'{socket.getservbyport(port, "unknown")}\n')
                     else:
                         self.output_to_console(f"\t\t[-] closed\n")
 
+            # Stop timer and calculate total
             finish_time = datetime.now()
             total_time = finish_time - start_time
             self.output_to_console(f"\nSCAN STOPPED AT: {finish_time.strftime('%A')} "
@@ -85,7 +95,7 @@ class PortScanner:
         Empty console before printing new results
         Pass users supplied data to new thread function
         """
-        self.stop = False  # This fixed the issue of starting new scan. Program could not reach start_scan it seems
+        self.stop = False  # This fixed the issue of starting new scan.
         self.empty_console()
         self.scan_new_thread()
 
@@ -174,6 +184,17 @@ class PortScanner:
             row=7, column=1, sticky=EW, padx=5, pady=5, columnspan=2)
 
 
+""" ================= Console design ================="""
+banner = pyfiglet.figlet_format("SwissPy")
+print(banner)
+subtitle_star = '*'
+print(f'{subtitle_star*37}\nWelcome to SwissPy, by Sean Scretchen\nPlease select a program below\n{subtitle_star*37}')
+print("""
+    (1) Port Scanner
+    (2) TBD
+    (3) TBD
+    """)
+
 """ ================= Init GUI & design ================="""
 # Window details. Grid layout in the class sets window size
 root = Tk()
@@ -192,5 +213,15 @@ root.tk_setPalette(background=background,
                    highlightBackground=outline)
 
 if __name__ == '__main__':
-    PortScanner(root)
+    select_program = int(input('[+] Choose your program: '))
+    if select_program == 1:
+        print('\tLaunching Port Scanner...')
+        PortScanner(root)
+    elif select_program == 2:
+        print(f'Sorry! That program is not ready yet')
+        sys.exit()
+    elif select_program == 3:
+        print(f'Sorry! That program is not ready yet')
+        sys.exit()
+
     root.mainloop()
