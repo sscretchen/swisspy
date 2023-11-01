@@ -179,7 +179,7 @@ class PortScanner:
         Button(self.root, text='Stop Scan', font=('calibri', 12, 'bold'), command=self.stop_button_clicked).grid(
             row=4, column=2, sticky=E, padx=5, pady=5)
 
-        # Save button // no functionality for now
+        # Save button
         Button(root, text='Save results', font=('calibri', 12, 'bold'), command=self.save_scan_results).grid(
             row=7, column=1, sticky=EW, padx=5, pady=5, columnspan=2)
 
