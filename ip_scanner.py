@@ -1,24 +1,33 @@
 # Testing done via Kali Purple. WinPcap is EOL so not safe to run on PROD system
-from tkinter import (Tk, ttk, Label, Entry, Button, Frame, Scrollbar, W, EW, E, Text,
-                     DISABLED, Y, BOTH, NORMAL, END, CENTER, NO, filedialog)
-from threading import Thread
-import scapy.all as scapy
-import collections
-import tkinter
+from tkinter import (Tk, ttk, Label, Button, W, EW, CENTER, NO)
+from scapy.all import sniff
 
 
 def start_scan_pressed():
+    """
+    Init sniff function
+    filter by IP traffic
+    """
+    sniff(filter='ip', prn=output_to_tree, count=5)
+
+
+def output_to_tree(packet):
+    """
+    Take Scapy Sniff function details
+    Print out src and dst data in treeview
+    """
+    key = tuple(sorted([packet[0][1].src, packet[0][1].dst]))
+    src_ip = packet[0][1].src
+    dst_ip = packet[0][1].dst
+    tree_frame.insert('', 'end', text="1", values=(src_ip, dst_ip))
+
+
+def save_scan_results():
+    """
+    Save console window results to .txt file
+    """
     pass
 
-
-def stop_scan_pressed():
-    pass
-
-
-thread = None
-stop_scan = True
-subdomain = ''
-source_ip_dict = collections.defaultdict(list)
 
 """ ================= Init GUI & design ================="""
 # Window size is set by GUI elements
@@ -39,16 +48,10 @@ root.tk_setPalette(background=background,
 
 """ ================= Labels ================="""
 # Title label
-Label(root, text="Wifi Scanner", font=('calibri', 20, 'bold')).grid(row=0, column=1, sticky=W)
-
-# Domain entry Label
-Label(root, text='IP domain (ex:172.568.2.0) :', font=('calibri', 16, 'bold')).grid(row=1, column=1, sticky=E, padx=5,
-                                                                                    pady=5)
-host_entry = Entry(root, font=('calibri', 16))
-host_entry.grid(row=1, column=2, sticky=EW, padx=5, pady=5)
+Label(root, text="IP Scanner", font=('calibri', 20, 'bold')).grid(row=0, column=1, sticky=W)
 
 # Results label
-Label(root, text='Scan Results :', font=('calibri', 16, 'bold')).grid(row=5, column=1, sticky=W, padx=5, pady=5)
+Label(root, text='Scan Results :', font=('calibri', 16, 'bold')).grid(row=2, column=1, sticky=W, padx=5, pady=5)
 
 """ ================= Treeview ================="""
 tree_style = ttk.Style()
@@ -63,29 +66,21 @@ tree_style.map('Treeview',
                background=[('selected', 'green')]
                )
 
-tree_frame = ttk.Treeview(root, columns=("c1", "c2"), show='headings')
-tree_frame.grid(row=6, column=1, columnspan=2)
-tree_frame.column("#1", anchor=tkinter.W, stretch=NO)
-tree_frame.column("#2", anchor=tkinter.W, stretch=NO)
+tree_frame = ttk.Treeview(root, columns=("src", "dst"), show='headings')
+tree_frame.grid(row=3, column=1, columnspan=4)
+tree_frame.column("src", anchor=CENTER, stretch=NO)
+tree_frame.column("dst", anchor=CENTER, stretch=NO)
 
-tree_frame.heading("#1", text="SRC Host")
-tree_frame.heading("#2", text="DST Host")
-
-# Sample data
-tree_frame.insert('', 'end', text="1", values=('1.1.1.1', '2.2.2.2'))
-tree_frame.insert('', 'end', text="2", values=('3.3.3.3', '4.4.4.4'))
+tree_frame.heading("src", text="SRC Host")
+tree_frame.heading("dst", text="DST Host")
 
 """ ================= Buttons ================="""
 # Start scan
 Button(root, text='Start Scan', font=('calibri', 12, 'bold'), command=start_scan_pressed).grid(
-    row=4, column=2, sticky=W, padx=5, pady=5)
-
-# Stop scan
-Button(root, text='Stop Scan', font=('calibri', 12, 'bold'), command=stop_scan_pressed).grid(
-    row=4, column=2, sticky=E, padx=5, pady=5)
+    row=1, column=1, sticky=W, padx=5, pady=5)
 
 # Save button // no functionality for now
-Button(root, text='Save results', font=('calibri', 12, 'bold')).grid(row=7, column=1, sticky=EW, padx=5, pady=5,
-                                                                     columnspan=2)
+Button(root, text='Save Results', font=('calibri', 12, 'bold'), command=save_scan_results).grid(
+    row=4, sticky=EW, column=1, padx=5, pady=5, columnspan=4)
 
 root.mainloop()
