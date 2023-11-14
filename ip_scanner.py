@@ -8,7 +8,8 @@ def start_scan_pressed():
     Init sniff function
     filter by IP traffic
     """
-    sniff(filter='ip', prn=output_to_tree, count=5)
+    tree_frame.insert('', 'end', text='[*] Sniffing traffic...')
+    sniff(filter='ip', prn=output_to_tree, count=2)
 
 
 def output_to_tree(packet):
@@ -20,13 +21,6 @@ def output_to_tree(packet):
     src_ip = packet[0][1].src
     dst_ip = packet[0][1].dst
     tree_frame.insert('', 'end', text="1", values=(src_ip, dst_ip))
-
-
-def save_scan_results():
-    """
-    Save console window results to .txt file
-    """
-    pass
 
 
 """ ================= Init GUI & design ================="""
@@ -78,9 +72,5 @@ tree_frame.heading("dst", text="DST Host")
 # Start scan
 Button(root, text='Start Scan', font=('calibri', 12, 'bold'), command=start_scan_pressed).grid(
     row=1, column=1, sticky=W, padx=5, pady=5)
-
-# Save button // no functionality for now
-Button(root, text='Save Results', font=('calibri', 12, 'bold'), command=save_scan_results).grid(
-    row=4, sticky=EW, column=1, padx=5, pady=5, columnspan=4)
 
 root.mainloop()
